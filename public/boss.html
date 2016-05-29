@@ -1,0 +1,105 @@
+<html>
+<head>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular-resource.min.js"></script>
+	<script type="text/javascript">
+		var lvl;
+		var Lw;
+		var Hg;
+		var Md;
+		var MdFq;
+		var dst;
+	</script>
+	<style>
+		body {
+			font-family: sans-serif;
+			font-size: 9pt; 
+		}
+		#levelsContainer {
+			display: flex;
+			border: 1px solid #888888; 
+			border-radius: 4px; 
+			width: 400px; 
+			height: 20px; 
+			background-color: #AAAAAA;
+		}
+		#levelsMeter {
+			float: left; 
+			height: 100%; 
+			width: 0%; 
+			overflow: hidden; 
+			background: linear-gradient(to right, #21a539 0%,#9e9e1e 73%,#ff0000 100%);
+			background-size: 400px, 100%;
+		}
+	</style>
+
+</head>
+<body>
+	<div id="padal">
+		<h2>metalzone</h2>
+		level
+		<input id="level" type="text"><br>
+		Low
+		<input id="Low" type="text"><br>
+		High<input id="High" type="text"><br>
+		Midle<input id="Midle" type="text"><br>
+		Midle Fq<input id="MidleFq" type="text"><br>
+		dist<input id="dist" type="text"><br>
+	</div>
+	<h1>Simple microphone example</h1>
+	<p>Relays sound from your microphone using WebRTC.<p>
+		<p><em>This example might not work on Chrome unless viewed over a HTTPS connection.</em><p>
+		<button id="btnStartMonitoring">Start/Stop</button>
+			<script>
+				var check = false;
+            // Create our audio context object 
+            // - Webkit still requires the audio context to be prefixed.
+            var audioContext = new (window.AudioContext || window.webKitAudioContext)();
+            
+            // // This variable will hold the source stream that we create from the WebRTC source
+            var webRtcSource; 
+            
+            // Handler for 'Start' button 'onclick' event
+            function handle_startMonitoring() {
+                // At the time of writing browsers still require prefixing to use 'navigator.getUserMedia'  
+                navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+                // Call get 'getUserMedia' asking for access to an audio source 
+                navigator.getUserMedia(
+                	{ audio: true, video: false }, 
+                	function (mediaStream) {
+                        // On success we return a WebRTC media stream
+                        // createMediaStreamSource will create an audio source node that wraps the MediaStream 
+                        webRtcSource = audioContext.createMediaStreamSource(mediaStream);
+                        // Connect this source directly to the audio destination (your speakers)
+                        webRtcSource.connect(audioContext.destination);
+                    }, 
+                    function (error) {
+                    	console.log("There was an error when getting microphone input: " + err);
+                    }
+                    );
+            }
+
+            // Handler for 'Stop' button 'onclick' event
+            function handle_stopMonitoring() {
+                // Close off the audio context by calling disconnect on the input source
+                // The browser will dispose disconnected input sources
+                webRtcSource.disconnect(); 
+                webRtcSource = null; 
+            }
+            
+            document.querySelector("#btnStartMonitoring").onclick = function(){
+            	if (!check) {
+            		handle_startMonitoring();
+            		check = true;}
+            		else{
+            			handle_stopMonitoring();
+            			check = false;
+
+            		};
+            }; //Кнопка on/off
+
+        </script>
+
+
+    </body>
+    </html>
