@@ -3,7 +3,7 @@
 	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
 	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular-resource.min.js"></script>
 	<script type="text/javascript">
-		var lvl;
+		var lvl = 2; // 0 to 2 ?
 		var Lw;
 		var Hg;
 		var Md;
@@ -45,16 +45,15 @@
 		Midle<input id="Midle" type="text"><br>
 		Midle Fq<input id="MidleFq" type="text"><br>
 		dist<input id="dist" type="text"><br>
+		<button></button>
 	</div>
 	<h1>Simple microphone example</h1>
 	<p>Relays sound from your microphone using WebRTC.<p>
 		<p><em>This example might not work on Chrome unless viewed over a HTTPS connection.</em><p>
 		<button id="btnStartMonitoring">Start/Stop</button>
 			<script>
-				var check = false;
-            // Create our audio context object 
-            // - Webkit still requires the audio context to be prefixed.
-            var audioContext = new (window.AudioContext || window.webKitAudioContext)();
+				var check = false; //лампочка
+            var audioContext = new (window.AudioContext || window.webKitAudioContext)(); //аудиоконтекст
             
             // // This variable will hold the source stream that we create from the WebRTC source
             var webRtcSource; 
@@ -71,7 +70,57 @@
                         // createMediaStreamSource will create an audio source node that wraps the MediaStream 
                         webRtcSource = audioContext.createMediaStreamSource(mediaStream);
                         // Connect this source directly to the audio destination (your speakers)
-                        webRtcSource.connect(audioContext.destination);
+
+var gainNode = audioContext.createGain();
+                       // webRtcSource.connect(gainNode);
+
+var gainDb = -40.0;
+var bandSplit = [360,3600];
+
+var hBand = audioContext.createBiquadFilter();
+hBand.type = "lowshelf";
+hBand.frequency.value = bandSplit[0];
+hBand.gain.value = gainDb;
+
+var hInvert = audioContext.createGain();
+hInvert.gain.value = -1.0;
+
+var mBand = audioContext.createGain();
+
+var lBand = audioContext.createBiquadFilter();
+lBand.type = "highshelf";
+lBand.frequency.value = bandSplit[1];
+lBand.gain.value = gainDb;
+
+var lInvert = audioContext.createGain();
+lInvert.gain.value = -1.0;
+
+webRtcSource.connect(lBand);
+webRtcSource.connect(mBand);
+webRtcSource.connect(hBand);
+
+hBand.connect(hInvert);
+lBand.connect(lInvert);
+
+hInvert.connect(mBand);
+lInvert.connect(mBand);
+
+var lGain = audioContext.createGain();
+//var mGain = audioContext.createGain();
+var hGain = audioContext.createGain();
+
+lBand.connect(lGain);
+//mBand.connect(mGain);
+hBand.connect(hGain);
+
+lGain.connect(gainNode);
+//mGain.connect(gainNode);
+hGain.connect(gainNode);
+hGain.gain.value = 2	;
+lGain.gain.value = 2;
+gainNode.connect(audioContext.destination);
+gainNode.gain.value = lvl;
+
                     }, 
                     function (error) {
                     	console.log("There was an error when getting microphone input: " + err);
